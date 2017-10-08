@@ -9,6 +9,9 @@
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <style>
+    .clickable {
+        cursor: pointer;
+    }
         ::-webkit-scrollbar
         {
             margin-top: 7px;
@@ -33,6 +36,7 @@
             padding: 10px 5px 64px 5px;
             height: calc(100vh - 128px);
             overflow-y: scroll;
+            overflow-x: hidden;
         }
         .chat-bubble-wrapper {
             width: 100%;
@@ -54,6 +58,13 @@
         }
         .chat-bubble.self {
             float: right;
+        }
+        .sys_message {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100vw;
+            text-align: center;
+            margin-top: 40px;
         }
 
 
@@ -114,8 +125,8 @@
         nav {
             background-color: #455a64;
         }
-        main {
-            background-color: #607d8b;
+        main, .msg_hidden {
+            background-color: #607d8b !important;
         }
         .chat-bubble {
             background-color: #fff;
@@ -149,8 +160,9 @@
         span.badge.new {
             background-color: #ff6f00;
         }
-
-
+        .sys_message p {
+            color: rgba(255, 255, 255, 0.5);
+        }
 
     </style>
 
@@ -160,7 +172,6 @@
         html, body {
             color: #000;
         }
-
         .progress {
             background-color: #e0e0e0;
         }
@@ -189,8 +200,8 @@
         nav {
             background-color: #00bcd4;
         }
-        main {
-            background-color: #fff;
+        main, .msg_hidden {
+            background-color: #fff !important;
         }
         .chat-bubble {
             background-color: #607d8b;
@@ -206,28 +217,31 @@
         .modal-content {
             background-color: #fff;
         }
-
+        .sys_message p {
+            color: rgba(0, 0, 0, 0.5);
+        }
 
     </style>
 </head>
 
 <body>
 <div id="fs_cover" style="position:fixed;height:100vh;width:100vw;background-color: #263238;z-index:99999;"></div>
-<ul id="add_dropdown" class="dropdown-content">
+<!--<ul id="add_dropdown" class="dropdown-content">
     <li><a class="modal-trigger" href="#create-group-modal">New Group</a></li>
     <li><a class="modal-trigger" href="#add-user-modal">Add User</a></li>
-</ul>
+</ul>-->
 <div class="navbar-fixed">
     <nav>
         <div class="nav-wrapper">
             <ul class="left">
                 <li><a style="margin-left:0px;" href="#" data-activates="group_list" class="button-collapse show-on-large"><i class="material-icons">menu</i></a></li>
             </ul>
-            <a class="brand-logo hide-on-small-only">Test Group Please Ignore</a>
+            <a class="brand-logo hide-on-small-only"></a>
             <ul class="right">
                 <li><a href="#settings-modal" class="modal-trigger"><span class="hide-on-med-and-down">Settings </span><i class="material-icons right">settings</i></a></li>
                 <li><a href="#tasks_modal" class="modal-trigger"><span class="hide-on-med-and-down">Background Tasks </span><i class="material-icons right">cached</i></a></li>
-                <li><a class="dropdown-button" href="#!" data-activates="add_dropdown"><span class="hide-on-med-and-down">Add Group </span><i class="material-icons right">add</i></a></li>
+                <li><a class="modal-trigger" href="#add-user-modal"><span class="hide-on-med-and-down">Add User </span><i class="material-icons right">add</i></a></li>
+                <!--<li><a class="dropdown-button" href="#!" data-activates="add_dropdown"><span class="hide-on-med-and-down">Add Group </span><i class="material-icons right">add</i></a></li>-->
             </ul>
         </div>
     </nav>
@@ -237,19 +251,10 @@
     <li><div class="divider"></div></li>
     <li><a class="subheader">Groups</a></li>
     <div class="groups">
-        <li><a id="group-lol">Test Group</a></li>
     </div>
 </ul>
 <main>
-    <div class="chat-bubble-wrapper"><div class="chat-bubble-title">
-        <span class="content">Miles</span>
-    </div></div>
-    <div class="chat-bubble-wrapper"><div class="chat-bubble">
-        <span class="content">Test Text</span>
-    </div></div>
-    <div class="chat-bubble-wrapper"><div class="chat-bubble self">
-        <span class="content">Test Text</span>
-    </div></div>
+    <div class="sys_message"><p>No Groups Currently Open</p></div>
 </main>
 
 <div style="bottom:0px;position:fixed;width:100vw;">
@@ -264,34 +269,7 @@
 <div id="tasks_modal" class="modal bottom-sheet modal-fixed-footer">
     <div class="modal-content">
         <h4>Background Tasks</h4>
-        <ul class="collection">
-            <li class="collection-item avatar">
-                <i class="material-icons circle orange">wifi</i>
-                <span class="title">Connecting to Edric Bulan</span>
-                <p>Getting details<br>
-                <div class="progress">
-                    <div class="indeterminate"></div>
-                </div>
-                </p>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle green">lock_outline</i>
-                <span class="title">Establishing secure connection to Luke</span>
-                <p>Awaiting response with security token<br>
-                <div class="progress">
-                    <div class="indeterminate"></div>
-                </div>
-                </p>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">folder_shared</i>
-                <span class="title">Sending file to Miles</span>
-                <p>60% (610Mb/1Gb)<br>
-                <div class="progress">
-                    <div class="determinate" style="width: 60%;"></div>
-                </div>
-                </p>
-            </li>
+        <ul id="background-tasks-list" class="collection">
         </ul>
     </div>
     <div class="modal-footer">
@@ -344,40 +322,70 @@
 
 <div id="add-user-modal" class="modal">
     <div class="modal-content">
-        <h4>New Group</h4>
         <div class="row">
-            <form class="col s12">
+            <div class="col s12">
                 <div class="row">
-                    <div class="input-field col s12 m6">
-                        <input id="user-ip-input" type="text" class="validate">
-                        <label for="user-ip-input">User IP Address</label>
+                    <div class="col s12">
+                        <h4>Add User</h4>
                     </div>
                 </div>
-            </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">
+                <ul class="tabs">
+                    <li class="tab col s3"><a class="active" href="#add_user_list_view">Discovered Users</a></li>
+                    <li class="tab col s3"><a href="#add_user_ip_view">Add By IP Address</a></li>
+                </ul>
+                <div class="row" id="add_user_list_view">
+                    <ul id="user-search-list" class="collection">
+
+                    </ul>
+                </div>
+                <div class="row" id="add_user_ip_view">
+                    <form class="col s12">
+                        <div class="row">
+                            <div class="input-field col s12 m6">
+                                <input id="user-ip-input" type="text" class="validate">
+                                <label for="user-ip-input">User IP Address</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <a href="#!" style="margin-right: 5px;" class="modal-action modal-close waves-effect waves-red btn-flat">Close</a>
+            <a id="add-user-modal-confirm" class="modal-action modal-close waves-effect waves-light btn green">Connect</a>
         </div>
     </div>
-    <div class="modal-footer">
-        <a href="#!" style="margin-right: 5px;" class="modal-action modal-close waves-effect waves-red btn-flat">Close</a>
-        <a id="add-user-modal-confirm" class="modal-action modal-close waves-effect waves-light btn green">Connect</a>
-    </div>
-</div>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-<!--
-SETUP
--->
-<script>
-    $("#message-input-bar").keypress(function(e) {
-        if(e.which == 13) {
-            $(this).val("");
-        }
-    });
-</script>
-<script>
+
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <!--
+    SETUP
+    -->
+    <script>
+
+    </script>
+    <script>
 $.fn.exists = function () {
     return this.length !== 0;
 }
+
+function hide_message_input() {
+    $("#message-input-bar").hide();
+    $("#message-input-bar").parents().eq(2).addClass("msg_hidden");
+}
+function show_message_input() {
+    $("#message-input-bar").show();
+    $("#message-input-bar").parents().eq(2).removeClass("msg_hidden");
+}
+
 $(document).ready(function() {
         document.getElementById('dark-styles').disabled = false;
         document.getElementById('light-styles').disabled = true;
@@ -410,6 +418,10 @@ function switch_css(off_target, on_target) {
 
     }
 
+$(".user_ip_display").click(function() {
+    $(this).select();
+});
+
 $("#enable-light-mode").change(function() {
         if (this.checked) {
             $("#fs_cover").css("background-color", "#ffffff");
@@ -426,16 +438,19 @@ $("#enable-light-mode").change(function() {
 
 
 </script>
-<!--
-FROM PYTHON
--->
-<script>
+    <!--
+    FROM PYTHON
+    -->
+    <script>
 var last_sender = "";
 function hide_loader() {
-    $("#fs_cover").hide();
+    hide_message_input();
+    $("#fs_cover").fadeOut(300);
 }
 
     function display_message_received(sender, message, self) {
+        console.log("Message received in current group");
+        console.log(message);
         if (typeof(self) === 'undefined') self = false;
         if (last_sender != sender) {
             last_sender = sender;
@@ -447,6 +462,8 @@ function hide_loader() {
     }
 
 function notify_message_received(sender, message, groupid, groupname, notoast) {
+    console.log("message received in "+groupname);
+    console.log(message);
     var badge = $("#group-"+groupid+" .new.badge");
     if (!badge.exists()) {
         $("#group-"+groupid).append('<span class="new badge">0</span>');
@@ -458,16 +475,82 @@ function notify_message_received(sender, message, groupid, groupname, notoast) {
     Materialize.toast($toastContent, 10000);
 
 }
+
+function toast(msg, t) {
+    if (typeof(t) === 'undefined') t = 10000;
+    var $toastContent = $('<span>'+msg+'</span>');
+    Materialize.toast($toastContent, t);
+}
+
+function append_to_groups(uuid, name) {
+    $(".groups").append('<li class="clickable"><a data-uuid="'+uuid+'">'+name+'</a></li>');
+}
+
+function show_address(s) {
+    $(".user_ip_display").html(s);
+}
+
+function start_background_task(uuid, title, message, icon, progress_percent, indeterminate) {
+    $("#background-tasks-list").append('<li class="collection-item avatar" id="background-task-'+uuid+'"><i class="material-icons circle green">'+icon+'</i><span class="title">'+title+'</span><p>'+message+'<br><div class="progress"><div class="'+(indeterminate ? "in" : "")+'determinate"></div></div></p></li>');
+}
+
+function add_discovered_user(name, ip) {
+    $("#user-search-list").append('<li class="collection-item"><div>'+name+'<a href="#!" data-ip="'+ip+'" class="secondary-content add_user_btn"><i class="material-icons right">add</i>Add<span class="hide-on-small-only"> User</span></a></div></li>');
+}
+
+function remove_discovered_user(ip) {
+    $(".add_user_btn").each(function() {
+        if ($(this).children("a")[0].data("ip") == ip) {
+            $(this).remove();
+        }
+    });
+}
+
+
+/*function update_background_task(uuid, title, message, progress_percent, indeterminate) {
+    if (title !== null) {
+        $("#background-task-"+uuid+" span.title").html(title);
+    }
+    if (message !== null) {
+        $("#background-task-"+uuid+" span.bgt_msg").html(message);
+    }
+    if (indeterminate !== null) {
+        if (indeterminate) {
+            $("#background-task-"+uuid+" .progress.determinate").addClass("indeterminate").removeClass("determinate");
+        } else {
+            $("#background-task-"+uuid+" .progress.indeterminate").addClass("determinate").removeClass("indeterminate");
+        }
+    }
+    if (progress_percent !== null) {
+        $("#background-task-"+uuid+" .progress.determinate").html("width": progress_percent+"%");
+    }
+}*/
 </script>
-<!--
-TO PYTHON
--->
-<script>
+    <!--
+    TO PYTHON
+    -->
+    <script>
     $(window).blur(function() {
         external.set_blur(true);
     });
     $(window).focus(function() {
         external.set_blur(false);
+    });
+    $("#message-input-bar").keydown(function(e) {
+        if(e.which == 13) {
+            external.send_message($(this).val());
+            $(this).val("");
+        }
+    });
+    $(".groups").on("click", "li a", function(){
+        external.switch_groups($(this).data("uuid"));
+        $(".brand-logo").html($(this).html());
+        show_message_input();
+        $('.button-collapse').sideNav('hide');
+        $("main").html("");
+    });
+    $("#add-user-modal-confirm").click(function() {
+        external.connect_to_user($("#user-ip-input").val());
     });
 </script>
 
